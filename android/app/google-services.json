@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "753625129754",
+    "project_id": "hotspot-chain",
+    "storage_bucket": "hotspot-chain.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:753625129754:android:20c3cdaa07940316b342a3",
+        "android_client_info": {
+          "package_name": "paradox.hotspotchain"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "753625129754-ofj1djdg58vkqdolvj3ahn05uev5o3sa.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtzPVIqwdDOOYXomNxQwpaPJPegfeMhCk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "753625129754-ofj1djdg58vkqdolvj3ahn05uev5o3sa.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
