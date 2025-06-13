@@ -1,17 +1,12 @@
 import * as React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import auth from '@react-native-firebase/auth';
-import LoginScreen from '../LoginScreen';
-import { View, StyleSheet, Text, Button } from 'react-native';
+import HomeScreen from '../screens/HomeScreen';
+import ShareHotspotScreen from '../screens/ShareHotspotScreen';
+import ReceiveHotspotScreen from '../screens/ReceiveHotspotScreen';
+import UsageStatsScreen from '../screens/UsageStatsScreen';
 
 const Stack = createNativeStackNavigator();
-
-const HomeScreen = () => (
-  <View style={styles.container}>
-    <Text>Welcome to HotspotApp!</Text>
-    <Button title="Sign Out" onPress={() => auth().signOut()} />
-  </View>
-);
 
 const AppNavigator = () => {
   const [user, setUser] = React.useState<any>(null);
@@ -24,21 +19,17 @@ const AppNavigator = () => {
   return (
     <Stack.Navigator>
       {user ? (
-        <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+        <>
+          <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="ShareHotspot" component={ShareHotspotScreen} />
+          <Stack.Screen name="ReceiveHotspot" component={ReceiveHotspotScreen} />
+          <Stack.Screen name="UsageStats" component={UsageStatsScreen} />
+        </>
       ) : (
-        <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Login" getComponent={() => require('../LoginScreen').default} options={{ headerShown: false }} />
       )}
     </Stack.Navigator>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-  },
-});
 
 export default AppNavigator;
