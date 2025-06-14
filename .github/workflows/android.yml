@@ -23,10 +23,16 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Patch MMKV codegen (ensure in CI)
         run: node ./scripts/patch-mmkv-codegen.js
+
+      - name: Show MMKV package.json (debug)
+        run: cat node_modules/react-native-mmkv/package.json
+
+      - name: Clean Android build folders
+        run: rm -rf android/app/build android/build
 
       - name: Install Android SDK
         uses: android-actions/setup-android@v3
