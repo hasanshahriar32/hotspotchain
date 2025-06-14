@@ -127,40 +127,21 @@ tasks.register('patchMmkvCmake') {
         if (cmakeFile.exists()) {
             println "Patching MMKV CMake line in ${cmakeFile.absolutePath}"
             def content = cmakeFile.getText('UTF-8')
-            // Regex to find and comment out the specific add_subdirectory line for MMKV codegen
             def patchedContent = content.replaceAll('(?m)^(\\s*add_subdirectory\\(.*react-native-mmkv/android/build/generated/source/codegen/jni/.*)$', '#$1')
             if (content != patchedContent) {
                 cmakeFile.write(patchedContent, 'UTF-8')
                 println "Successfully patched MMKV CMake line."
             } else {
-                println "MMKV CMake line already patched or not found, or regex did not match."
+                println "MMKV CMake line already patched or not found."
             }
         } else {
-            println "Android-autolinking.cmake not found at ${cmakeFile.absolutePath}, skipping patch."
+            println "Android-autolinking.cmake not found, skipping patch."
         }
     }
 }
 
-// Ensure the patch runs before CMake configuration for all relevant variants
-android.applicationVariants.all { variant ->
-    def variantName = variant.name.capitalize()
-    // For React Native 0.71+ it's usually externalNativeBuild[VariantName]
-    // For older versions, it might be configureCMake[VariantName]
-    // We'll try to hook into the task that generates/configures CMake.
-    // Common tasks are: externalNativeBuildDebug, externalNativeBuildRelease
-    // or for older AGP: configureCMakeDebug, configureCMakeRelease
-    // Let's try to make it more robust by checking task existence or using a more generic hook if possible.
-    // For now, targeting the known failing task's variant:
-    // The task configureCMakeRelWithDebInfo implies variant "RelWithDebInfo"
-    // However, standard variants are Debug and Release.
-    // Let's target the common externalNativeBuild tasks.
-    tasks.matching { it.name.startsWith("externalNativeBuild") && it.name.endsWith(variantName) }.all { task ->
-        println "Making ${task.name} depend on patchMmkvCmake"
-        task.dependsOn(tasks.named('patchMmkvCmake'))
-    }
-    // Fallback for older AGP or different task naming
-    tasks.matching { it.name.startsWith("configureCMake") && it.name.endsWith(variantName) }.all { task ->
-        println "Making ${task.name} depend on patchMmkvCmake"
+gradle.taskGraph.whenReady { taskGraph ->
+    tasks.matching { it.name.startsWith("configureCMake") }.all { task ->
         task.dependsOn(tasks.named('patchMmkvCmake'))
     }
 }
