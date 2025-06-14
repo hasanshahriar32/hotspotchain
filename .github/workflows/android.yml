@@ -40,18 +40,15 @@ jobs:
           ./gradlew :app:preBuild
           cd ..
 
-      - name: Patch MMKV CMake add_subdirectory (always)
+      - name: Build release APK (patch just before build)
         run: |
-          FILE=android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake
+          cd android
+          FILE=app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake
           if [ -f "$FILE" ]; then
             sed -i '/add_subdirectory.*react-native-mmkv.*jni/ s/^/#/' "$FILE"
             echo "Patched $FILE"
             grep 'add_subdirectory' "$FILE" || true
           fi
-
-      - name: Build release APK
-        run: |
-          cd android
           ./gradlew assembleRelease
           cd ..
 
