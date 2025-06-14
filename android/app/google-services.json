@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:753625129754:android:20c3cdaa07940316b342a3",
+        "mobilesdk_app_id": "1:753625129754:android:df4e2834ffc4048fb342a3",
         "android_client_info": {
-          "package_name": "paradox.hotspotchain"
+          "package_name": "com.hotspotapptemp"
         }
       },
       "oauth_client": [
