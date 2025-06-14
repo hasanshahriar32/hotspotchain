@@ -8,7 +8,7 @@
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest",
-    "postinstall": "node ./scripts/patch-mmkv-codegen.js && node ./scripts/copy-mmkv-cmakelists.js"
+    "postinstall": "node ./scripts/patch-mmkv-codegen.js"
   },
   "dependencies": {
     "@react-native-firebase/app": "^22.2.1",

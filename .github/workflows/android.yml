@@ -49,6 +49,12 @@ jobs:
           ./gradlew :app:preBuild
           cd ..
 
+      - name: Copy dummy MMKV CMakeLists.txt (for CI build)
+        run: node ./scripts/copy-mmkv-cmakelists.js
+
+      - name: Patch Android-autolinking.cmake (comment out MMKV codegen and link)
+        run: node ./scripts/patch-autolinking-cmake.js
+
       - name: Build release APK
         run: |
           cd android
