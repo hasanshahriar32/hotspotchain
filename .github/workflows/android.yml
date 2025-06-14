@@ -49,6 +49,9 @@ jobs:
           ./gradlew :app:preBuild
           cd ..
 
+      - name: Patch Android-autolinking.cmake for MMKV (CI workaround)
+        run: node ./scripts/patch-autolinking-cmake.js
+
       - name: Build release APK
         run: |
           cd android
