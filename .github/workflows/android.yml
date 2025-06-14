@@ -40,16 +40,6 @@ jobs:
           ./gradlew :app:preBuild
           cd ..
 
-      - name: Patch MMKV codegen CMake block (after preBuild)
-        run: |
-          set -x
-          FILE=android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake
-          if [ -f "$FILE" ]; then
-            sed -i.bak '/add_subdirectory.*react-native-mmkv.*jni/ s/^/#/' "$FILE"
-            echo "Patched $FILE"
-            grep 'add_subdirectory' "$FILE" || true
-          fi
-
       - name: Build release APK
         run: |
           cd android
