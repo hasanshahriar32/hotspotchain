@@ -49,11 +49,11 @@ jobs:
           ./gradlew :app:preBuild
           cd ..
 
-      - name: Patch and Build release APK (MMKV CMake workaround)
+      - name: Build release APK
         run: |
-          node ../scripts/patch-autolinking-cmake.js
+          cd android
           ./gradlew assembleRelease
-        working-directory: android
+          cd ..
 
       - name: Set APK version suffix
         id: apk_version
