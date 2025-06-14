@@ -132,7 +132,8 @@ gradle.taskGraph.whenReady { taskGraph ->
             if (cmakeFile.exists()) {
                 println "[patchMmkvCmake] Patching MMKV CMake line in ${cmakeFile.absolutePath}"
                 def content = cmakeFile.getText('UTF-8')
-                def patchedContent = content.replaceAll('(?m)^(\\s*add_subdirectory\\(.*react-native-mmkv/android/build/generated/source/codegen/jni/.*)$', '#$1')
+                // Robust regex: match any add_subdirectory line for MMKV codegen JNI
+                def patchedContent = content.replaceAll(/^(.*add_subdirectory\([^\n]*react-native-mmkv\/android\/build\/generated\/source\/codegen\/jni[^\n]*\).*)$/, '#$1')
                 if (content != patchedContent) {
                     cmakeFile.write(patchedContent, 'UTF-8')
                     println "[patchMmkvCmake] Successfully patched MMKV CMake line."
