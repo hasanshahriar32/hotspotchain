@@ -40,14 +40,29 @@ jobs:
           ./gradlew :app:preBuild
           cd ..
 
-      - name: Patch MMKV CMake add_subdirectory
+      - name: Patch MMKV CMake add_subdirectory (if needed)
         run: |
-          sed -i '/add_subdirectory.*react-native-mmkv.*jni/ s/^/#/' android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake || true
+          FILE=android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake
+          DIR=node_modules/react-native-mmkv/android/build/generated/source/codegen/jni
+          if [ -f "$FILE" ] && [ ! -f "$DIR/CMakeLists.txt" ]; then
+            sed -i '/add_subdirectory.*react-native-mmkv.*jni/ s/^/#/' "$FILE"
+          fi
 
-      - name: Build release APK
+      - name: Build release APK (with retry)
         run: |
+          set -e
           cd android
-          ./gradlew assembleRelease
+          ./gradlew assembleRelease || (
+            echo "Retrying after patch..."
+            cd ..
+            FILE=android/app/build/generated/autolinking/src/main/jni/Android-autolinking.cmake
+            DIR=node_modules/react-native-mmkv/android/build/generated/source/codegen/jni
+            if [ -f "$FILE" ] && [ ! -f "$DIR/CMakeLists.txt" ]; then
+              sed -i '/add_subdirectory.*react-native-mmkv.*jni/ s/^/#/' "$FILE"
+            fi
+            cd android
+            ./gradlew assembleRelease
+          )
           cd ..
 
       - name: Set APK version suffix
