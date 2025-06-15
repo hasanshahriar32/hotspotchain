@@ -29,31 +29,58 @@ jobs:
         run: npm ci
 
       - name: Clean Android build folders
-        run: rm -rf android/app/build android/build
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            if (Test-Path android/app/build) { Remove-Item -Recurse -Force android/app/build }
+            if (Test-Path android/build) { Remove-Item -Recurse -Force android/build }
+          else
+            rm -rf android/app/build android/build
+          fi
+        shell: pwsh
 
       - name: Install Android SDK
         uses: android-actions/setup-android@v3
 
       - name: Make gradlew executable
+        if: runner.os != 'Windows'
         run: chmod +x android/gradlew
 
       - name: Workaround for react-native-mmkv codegen on CI
-        run: mkdir -p node_modules/react-native-mmkv/android/build/generated/source/codegen/jni/
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            mkdir "node_modules\\react-native-mmkv\\android\\build\\generated\\source\\codegen\\jni" -Force
+          else
+            mkdir -p node_modules/react-native-mmkv/android/build/generated/source/codegen/jni/
+          fi
+        shell: pwsh
 
       - name: Copy dummy MMKV CMakeLists.txt (for CI build)
         run: node ./scripts/copy-mmkv-cmakelists.js
 
       - name: Debug- List MMKV codegen JNI dir
-        run: "ls -l node_modules/react-native-mmkv/android/build/generated/source/codegen/jni/"
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            dir node_modules\\react-native-mmkv\\android\\build\\generated\\source\\codegen\\jni\\
+          else
+            ls -l node_modules/react-native-mmkv/android/build/generated/source/codegen/jni/
+          fi
+        shell: pwsh
 
       - name: Debug- Show dummy MMKV CMakeLists.txt
-        run: "cat node_modules/react-native-mmkv/android/build/generated/source/codegen/jni/CMakeLists.txt"
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            type node_modules\\react-native-mmkv\\android\\build\\generated\\source\\codegen\\jni\\CMakeLists.txt
+          else
+            cat node_modules/react-native-mmkv/android/build/generated/source/codegen/jni/CMakeLists.txt
+          fi
+        shell: pwsh
 
       - name: Gradle preBuild (generate autolinking files)
         run: |
           cd android
           ./gradlew :app:preBuild
           cd ..
+        shell: bash
 
       - name: Patch autolinking.cmake to remove MMKV JNI C++ build
         run: node ./scripts/patch-autolinking-cmake.js
@@ -62,11 +89,18 @@ jobs:
         run: node ./scripts/patch-autolinking-cpp.js
 
       - name: Debug- Show patched autolinking.cpp
-        run: cat android/app/build/generated/autolinking/src/main/jni/autolinking.cpp
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            type android\\app\\build\\generated\\autolinking\\src\\main\\jni\\autolinking.cpp
+          else
+            cat android/app/build/generated/autolinking/src/main/jni/autolinking.cpp
+          fi
+        shell: pwsh
 
       - name: Build release APK
         run: ./gradlew assembleRelease
         working-directory: android
+        shell: bash
 
       - name: Set APK version suffix
         id: apk_version
@@ -76,14 +110,21 @@ jobs:
           else
             echo "suffix=${{ github.run_number }}" >> $GITHUB_OUTPUT
           fi
+        shell: bash
 
       - name: Rename APK with version
         run: |
-          mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/app-release-${{ steps.apk_version.outputs.suffix }}.apk
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            Rename-Item -Path android\\app\\build\\outputs\\apk\\release\\app-release.apk -NewName app-release-${{ steps.apk_version.outputs.suffix }}.apk
+          else
+            mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/app-release-${{ steps.apk_version.outputs.suffix }}.apk
+          fi
+        shell: pwsh
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk-${{ steps.apk_version.outputs.suffix }}
-          path: android/app/build/outputs/apk/release/app-release-${{ steps.apk_version.outputs.suffix }}.apk
+          path: |
+            android/app/build/outputs/apk/release/app-release-${{ steps.apk_version.outputs.suffix }}.apk
           # retention-days: 3
