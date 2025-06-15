@@ -54,6 +54,9 @@ jobs:
 
       - name: Patch Android-autolinking.cmake (comment out MMKV codegen and link)
         run: node ./scripts/patch-autolinking-cmake.js
+        
+      - name: Show Android-autolinking.cmake before Gradle build
+        run: bash scripts/debug-autolinking-cmake.sh
 
       - name: Build release APK
         run: |
