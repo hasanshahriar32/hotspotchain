@@ -121,38 +121,38 @@ dependencies {
 apply plugin: 'com.google.gms.google-services'
 
 // --- MMKV CMake patch: inject directly into all CMake-related tasks ---
-gradle.taskGraph.whenReady { taskGraph ->
-    def cmakeTasks = tasks.matching { it.name.startsWith("configureCMake") || it.name.startsWith("externalNativeBuild") }
-    println "[patchMmkvCmake] Injecting patch logic into these CMake-related tasks:"
-    cmakeTasks.all { task ->
-        println "  - ${task.name}"
-        task.doFirst {
-            def cmakeFile = file("build/generated/autolinking/src/main/jni/Android-autolinking.cmake")
-            println "[patchMmkvCmake] Checking for CMake file at: ${cmakeFile.absolutePath}"
-            if (cmakeFile.exists()) {
-                println "[patchMmkvCmake] Patching MMKV CMake lines in ${cmakeFile.absolutePath}"
-                def content = cmakeFile.getText('UTF-8')
-                // Remove any add_subdirectory line for MMKV codegen JNI
-                def patchedContent = content.replaceAll(/(?m)^.*add_subdirectory\([^\n]*react-native-mmkv[\\/]+android[\\/]+build[\\/]+generated[\\/]+source[\\/]+codegen[\\/]+jni[^\n]*\).*\n?/, "")
-                // Remove any line in AUTOLINKED_LIBRARIES referencing react_codegen_*
-                patchedContent = patchedContent.replaceAll(/(?m)^\s*react_codegen_[A-Za-z0-9_]+\s*\n?/, "")
-                // Remove any line in AUTOLINKED_LIBRARIES referencing react-native-mmkv
-                def finalContent = patchedContent.replaceAll(/(?m)^\s*react-native-mmkv\s*\n?/, "")
-                if (content != finalContent) {
-                    cmakeFile.write(finalContent, 'UTF-8')
-                    println "[patchMmkvCmake] Successfully patched MMKV CMake lines."
-                } else {
-                    println "[patchMmkvCmake] MMKV CMake lines already patched or not found."
-                }
-                // Print first 20 lines for debug
-                println "[patchMmkvCmake] First 20 lines of patched CMake file:"
-                def lines = cmakeFile.readLines()
-                lines.take(20).eachWithIndex { line, idx ->
-                    println String.format("%2d: %s", idx+1, line)
-                }
-            } else {
-                println "[patchMmkvCmake] Android-autolinking.cmake not found, skipping patch."
-            }
-        }
-    }
-}
+// gradle.taskGraph.whenReady { taskGraph ->
+//     def cmakeTasks = tasks.matching { it.name.startsWith("configureCMake") || it.name.startsWith("externalNativeBuild") }
+//     println "[patchMmkvCmake] Injecting patch logic into these CMake-related tasks:"
+//     cmakeTasks.all { task ->
+//         println "  - ${task.name}"
+//         task.doFirst {
+//             def cmakeFile = file("build/generated/autolinking/src/main/jni/Android-autolinking.cmake")
+//             println "[patchMmkvCmake] Checking for CMake file at: ${cmakeFile.absolutePath}"
+//             if (cmakeFile.exists()) {
+//                 println "[patchMmkvCmake] Patching MMKV CMake lines in ${cmakeFile.absolutePath}"
+//                 def content = cmakeFile.getText('UTF-8')
+//                 // Remove any add_subdirectory line for MMKV codegen JNI
+//                 def patchedContent = content.replaceAll(/(?m)^.*add_subdirectory\([^\n]*react-native-mmkv[\\/]+android[\\/]+build[\\/]+generated[\\/]+source[\\/]+codegen[\\/]+jni[^\n]*\).*\n?/, "")
+//                 // Remove any line in AUTOLINKED_LIBRARIES referencing react_codegen_*
+//                 patchedContent = patchedContent.replaceAll(/(?m)^\s*react_codegen_[A-Za-z0-9_]+\s*\n?/, "")
+//                 // Remove any line in AUTOLINKED_LIBRARIES referencing react-native-mmkv
+//                 def finalContent = patchedContent.replaceAll(/(?m)^\s*react-native-mmkv\s*\n?/, "")
+//                 if (content != finalContent) {
+//                     cmakeFile.write(finalContent, 'UTF-8')
+//                     println "[patchMmkvCmake] Successfully patched MMKV CMake lines."
+//                 } else {
+//                     println "[patchMmkvCmake] MMKV CMake lines already patched or not found."
+//                 }
+//                 // Print first 20 lines for debug
+//                 println "[patchMmkvCmake] First 20 lines of patched CMake file:"
+//                 def lines = cmakeFile.readLines()
+//                 lines.take(20).eachWithIndex { line, idx ->
+//                     println String.format("%2d: %s", idx+1, line)
+//                 }
+//             } else {
+//                 println "[patchMmkvCmake] Android-autolinking.cmake not found, skipping patch."
+//             }
+//         }
+//     }
+// }
