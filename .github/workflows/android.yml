@@ -99,18 +99,10 @@ jobs:
         env:
           VERCEL_BLOB_TOKEN: ${{ secrets.VERCEL_BLOB_TOKEN }}
         run: |
+          npm install @vercel/blob
           $apkPath = "android/app/build/outputs/apk/release/app-release-${{ steps.apk_version_bash.outputs.suffix }}.apk"
-          npm install -g vercel@latest
-          $uploadResult = vercel blob upload $apkPath --token $env:VERCEL_BLOB_TOKEN
-          # Parse the resulting URL from the CLI output
-          $urlLine = $uploadResult | Select-String -Pattern "https://.*\.blob\.vercel-storage\.com/.*"
-          if ($urlLine) {
-            $apkDownloadUrl = $urlLine.Matches[0].Value
-            echo "APK_DOWNLOAD_URL=$apkDownloadUrl" >> $env:GITHUB_ENV
-          } else {
-            Write-Host "Failed to parse APK download URL from Vercel CLI output."
-            exit 1
-          }
+          $apkUrl = node scripts/upload-apk-to-vercel-blob.js $apkPath
+          echo "APK_DOWNLOAD_URL=$apkUrl" | Out-File -FilePath $env:GITHUB_ENV -Append
         shell: pwsh
 
       - name: Send APK link to Telegram group (on tag release)
