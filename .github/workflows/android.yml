@@ -56,16 +56,6 @@ jobs:
           cd ..
         shell: pwsh
 
-      - name: Patch autolinking.cmake to remove MMKV JNI C++ build
-        run: node ./scripts/patch-autolinking-cmake.js
-
-      - name: Patch autolinking.cpp to remove MMKV JNI includes
-        run: node ./scripts/patch-autolinking-cpp.js
-
-      - name: Debug- Show patched autolinking.cpp
-        run: type android\app\build\generated\autolinking\src\main\jni\autolinking.cpp
-        shell: pwsh
-
       - name: Build release APK
         run: ./gradlew assembleRelease
         working-directory: android
@@ -117,10 +107,11 @@ jobs:
           fi
         shell: pwsh
 
+    
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk-${{ steps.apk_version.outputs.suffix }}
           path: |
             android/app/build/outputs/apk/release/app-release-${{ steps.apk_version.outputs.suffix }}.apk
-          # retention-days: 3
+          retention-days: 3
