@@ -135,7 +135,9 @@ gradle.taskGraph.whenReady { taskGraph ->
                 // Remove any add_subdirectory line for MMKV codegen JNI
                 def patchedContent = content.replaceAll(/(?m)^.*add_subdirectory\([^\n]*react-native-mmkv[\\/]+android[\\/]+build[\\/]+generated[\\/]+source[\\/]+codegen[\\/]+jni[^\n]*\).*\n?/, "")
                 // Remove any line in AUTOLINKED_LIBRARIES referencing react_codegen_*
-                def finalContent = patchedContent.replaceAll(/(?m)^\s*react_codegen_[A-Za-z0-9_]+\s*\n?/, "")
+                patchedContent = patchedContent.replaceAll(/(?m)^\s*react_codegen_[A-Za-z0-9_]+\s*\n?/, "")
+                // Remove any line in AUTOLINKED_LIBRARIES referencing react-native-mmkv
+                def finalContent = patchedContent.replaceAll(/(?m)^\s*react-native-mmkv\s*\n?/, "")
                 if (content != finalContent) {
                     cmakeFile.write(finalContent, 'UTF-8')
                     println "[patchMmkvCmake] Successfully patched MMKV CMake lines."

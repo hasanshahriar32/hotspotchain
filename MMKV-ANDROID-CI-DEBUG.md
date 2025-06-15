@@ -43,4 +43,11 @@ This log documents all steps, changes, and observations made while attempting to
 - Updated the dummy CMakeLists.txt to add `return()` as the first line, ensuring CMake does not attempt to build any MMKV JNI sources.
 - Next: Commit and push these changes, then re-run CI to check if the build proceeds past the previous C++/CMake errors.
 
+## 2025-06-15 (cont'd)
+
+### Actions Taken
+- Updated the Gradle patch logic in build.gradle to also remove any line containing 'react-native-mmkv' from AUTOLINKED_LIBRARIES in Android-autolinking.cmake.
+- This should prevent the build from linking or building MMKV at all, avoiding codegen-related C++ errors.
+- Next: Commit and push these changes, then re-run CI to check if the build proceeds past the previous errors.
+
 ---
