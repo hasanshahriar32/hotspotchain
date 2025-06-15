@@ -50,4 +50,12 @@ This log documents all steps, changes, and observations made while attempting to
 - This should prevent the build from linking or building MMKV at all, avoiding codegen-related C++ errors.
 - Next: Commit and push these changes, then re-run CI to check if the build proceeds past the previous errors.
 
+## 2025-06-15 (cont'd)
+
+### Actions Taken
+- Added `scripts/patch-autolinking-cmake.js` to patch `Android-autolinking.cmake` after `preBuild` in the workflow.
+- This script removes any `add_subdirectory` lines for MMKV JNI, any `target_link_libraries` for `react_codegen_*`, and any references to `react_codegen_*` in `AUTOLINKED_LIBRARIES`.
+- Added a workflow step to run this patch script after `preBuild`.
+- Next: Commit and push these changes, then re-run CI to check if the build proceeds past the previous C++/CMake errors.
+
 ---

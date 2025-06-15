@@ -52,6 +52,9 @@ jobs:
           ./gradlew :app:preBuild
           cd ..
 
+      - name: Patch autolinking.cmake to remove MMKV JNI C++ build
+        run: node ./scripts/patch-autolinking-cmake.js
+
       - name: Patch autolinking.cpp to remove MMKV JNI includes
         run: node ./scripts/patch-autolinking-cpp.js
 
