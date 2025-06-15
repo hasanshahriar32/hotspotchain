@@ -58,4 +58,16 @@ This log documents all steps, changes, and observations made while attempting to
 - Added a workflow step to run this patch script after `preBuild`.
 - Next: Commit and push these changes, then re-run CI to check if the build proceeds past the previous C++/CMake errors.
 
+## 2025-06-15 (cont'd)
+
+### Actions Taken
+- Updated `scripts/patch-autolinking-cmake.js` to remove `add_subdirectory` lines for MMKV JNI and `react_codegen_*` references.
+- CI run shows that the patch script removes the MMKV JNI codegen line, but the main MMKV C++ `add_subdirectory` line (for `react-native-mmkv/android/`) is still present in `Android-autolinking.cmake`.
+- As a result, the build still tries to build MMKV native C++ code, leading to errors about missing codegen/spec files and headers.
+
+### Next Steps
+- Update the patch script to remove **all** `add_subdirectory` lines referencing `react-native-mmkv/android/`, not just the codegen/jni subdir.
+- This should fully prevent MMKV native code from being built in CI and resolve the remaining C++/CMake errors.
+- After updating the script, commit and re-run CI to verify the fix.
+
 ---

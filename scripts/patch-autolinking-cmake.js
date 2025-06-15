@@ -25,21 +25,25 @@ if (fs.existsSync(cmakePath)) {
   const mmkvTargetLinkRegex = /^.*target_link_libraries\((react_codegen_[A-Za-z0-9_]+)[^\n]*\).*\n?/gmi;
   // Remove any line in AUTOLINKED_LIBRARIES block referencing react_codegen_*
   const mmkvLibRefRegex = /^\s*react_codegen_[A-Za-z0-9_]+\s*\n?/gmi;
+  // Remove any line in AUTOLINKED_LIBRARIES block referencing react-native-mmkv
+  const mmkvLibDirectRefRegex = /^\s*react-native-mmkv\s*\n?/gmi;
 
   let patched = false;
   let newContent = content.replace(mmkvAddSubdirRegex, '');
   if (newContent !== content) patched = true;
   let nextContent = newContent.replace(mmkvTargetLinkRegex, '');
   if (nextContent !== newContent) patched = true;
-  let finalContent = nextContent.replace(mmkvLibRefRegex, '');
-  if (finalContent !== nextContent) patched = true;
+  let next2Content = nextContent.replace(mmkvLibRefRegex, '');
+  if (next2Content !== nextContent) patched = true;
+  let finalContent = next2Content.replace(mmkvLibDirectRefRegex, '');
+  if (finalContent !== next2Content) patched = true;
 
   if (patched) {
     fs.writeFileSync(cmakePath, finalContent, 'utf8');
-    console.log('\nPatched Android-autolinking.cmake to REMOVE MMKV codegen JNI and react_codegen_* references.');
+    console.log('\nPatched Android-autolinking.cmake to REMOVE MMKV add_subdirectory, react-native-mmkv, and react_codegen_* references.');
     printFirstLines('After patch', finalContent);
   } else {
-    console.log('\nNo MMKV codegen JNI or react_codegen_* lines found or already removed.');
+    console.log('\nNo MMKV add_subdirectory, react-native-mmkv, or react_codegen_* lines found or already removed.');
     printFirstLines('After patch (no changes)', finalContent);
   }
 } else {
