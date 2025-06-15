@@ -43,25 +43,42 @@ jobs:
       - name: Workaround for react-native-mmkv codegen on CI
         run: mkdir -p node_modules/react-native-mmkv/android/build/generated/source/codegen/jni/
 
+      - name: Copy dummy MMKV CMakeLists.txt (for CI build)
+        run: node ./scripts/copy-mmkv-cmakelists.js
+
       - name: Gradle preBuild (generate autolinking files)
         run: |
           cd android
           ./gradlew :app:preBuild
           cd ..
 
-      - name: Copy dummy MMKV CMakeLists.txt (for CI build)
-        run: node ./scripts/copy-mmkv-cmakelists.js
+      - name: Patch Android-autolinking.cmake (remove MMKV codegen and link)
+        run: node ../scripts/patch-autolinking-cmake.js
+        working-directory: android
 
-      - name: Patch Android-autolinking.cmake (comment out MMKV codegen and link)
-        run: node ./scripts/patch-autolinking-cmake.js
-      
       - name: Show Android-autolinking.cmake before Gradle build
-        run: bash scripts/debug-autolinking-cmake.sh
+        run: bash ../scripts/debug-autolinking-cmake.sh
+        working-directory: android
 
-      - name: Build Android APK with react-native-android-build-apk
-        uses: wzieba/react-native-android-build@v1
+      - name: Build release APK
+        run: ./gradlew assembleRelease
+        working-directory: android
+
+      - name: Set APK version suffix
+        id: apk_version
+        run: |
+          if [ -n "${{ github.ref_name }}" ] && [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "suffix=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "suffix=${{ github.run_number }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Rename APK with version
+        run: |
+          mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/app-release-${{ steps.apk_version.outputs.suffix }}.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
         with:
-          node-version: 18
-          java-version: 17
-          package-manager: npm
-          build-variant: release
+          name: app-release-apk-${{ steps.apk_version.outputs.suffix }}
+          path: android/app/build/outputs/apk/release/app-release-${{ steps.apk_version.outputs.suffix }}.apk
