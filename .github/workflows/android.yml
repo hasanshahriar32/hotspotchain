@@ -2,47 +2,47 @@ name: Build Android APK
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - name: Install Java
+        uses: actions/setup-java@v2
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          java-version: '11'
+          distribution: 'adopt'
+          cache: gradle
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Make Gradle executable
+        run: chmod +x ./android/gradlew
+
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
         with:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm install -g yarn
+          yarn install
 
-      - name: Clean Android build folders
-        run: rm -rf android/app/build android/build
+      - name: Assemble APK
+        run: cd android && ./gradlew assembleRelease
 
-      - name: Install Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Make gradlew executable
-        run: chmod +x android/gradlew
-
-      - name: Workaround for react-native-mmkv codegen on CI
-        run: mkdir -p node_modules/react-native-mmkv/android/build/generated/source/codegen/jni/
-
-      - name: Copy dummy MMKV CMakeLists.txt (for CI build)
-        run: node ./scripts/copy-mmkv-cmakelists.js
-
-      - name: Debug- List MMKV codegen JNI dir
-        run: "ls -l node_modules/react-native-mmkv/android/build/generated/source/codegen/jni/"
-
+      - name: Upload APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: app
+          path: android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 3
       - name: Debug- Show dummy MMKV CMakeLists.txt
         run: "cat node_modules/react-native-mmkv/android/build/generated/source/codegen/jni/CMakeLists.txt"
 
