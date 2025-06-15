@@ -5,6 +5,7 @@ import HomeScreen from '../screens/HomeScreen';
 import ShareHotspotScreen from '../screens/ShareHotspotScreen';
 import ReceiveHotspotScreen from '../screens/ReceiveHotspotScreen';
 import UsageStatsScreen from '../screens/UsageStatsScreen';
+import UserInfoScreen from '../screens/UserInfoScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,6 +25,7 @@ const AppNavigator = () => {
           <Stack.Screen name="ShareHotspot" component={ShareHotspotScreen} />
           <Stack.Screen name="ReceiveHotspot" component={ReceiveHotspotScreen} />
           <Stack.Screen name="UsageStats" component={UsageStatsScreen} />
+          <Stack.Screen name="UserInfo" component={UserInfoScreen} options={{ title: "User Info" }} />
         </>
       ) : (
         <Stack.Screen name="Login" getComponent={() => require('../LoginScreen').default} options={{ headerShown: false }} />
