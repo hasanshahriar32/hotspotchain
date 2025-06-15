@@ -85,12 +85,45 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: -1002769415296
         run: |
-          $apkPath = "android/app/build/outputs/apk/release/app-release-${{ steps.apk_version_bash.outputs.suffix }}.apk"
-          $url = "https://api.telegram.org/bot$env:TELEGRAM_BOT_TOKEN/sendDocument"
-          $form = @{
+          $apkUrl = "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          $url = "https://api.telegram.org/bot$env:TELEGRAM_BOT_TOKEN/sendMessage"
+          $body = @{
             chat_id = $env:TELEGRAM_CHAT_ID
-            caption = "New APK release: ${{ github.ref_name }}"
-            document = Get-Item $apkPath
+            text = "New APK release: ${{ github.ref_name }}\nDownload: $apkUrl"
           }
-          Invoke-RestMethod -Uri $url -Method Post -Form $form
+          Invoke-RestMethod -Uri $url -Method Post -Body $body
+        shell: pwsh
+
+      - name: Upload APK to Vercel Blob Storage
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          VERCEL_BLOB_TOKEN: ${{ secrets.VERCEL_BLOB_TOKEN }}
+        run: |
+          $apkPath = "android/app/build/outputs/apk/release/app-release-${{ steps.apk_version_bash.outputs.suffix }}.apk"
+          npm install -g vercel@latest
+          $uploadResult = vercel blob upload $apkPath --token $env:VERCEL_BLOB_TOKEN
+          # Parse the resulting URL from the CLI output
+          $urlLine = $uploadResult | Select-String -Pattern "https://.*\.blob\.vercel-storage\.com/.*"
+          if ($urlLine) {
+            $apkDownloadUrl = $urlLine.Matches[0].Value
+            echo "APK_DOWNLOAD_URL=$apkDownloadUrl" >> $env:GITHUB_ENV
+          } else {
+            Write-Host "Failed to parse APK download URL from Vercel CLI output."
+            exit 1
+          }
+        shell: pwsh
+
+      - name: Send APK link to Telegram group (on tag release)
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: -1002769415296
+        run: |
+          $apkUrl = $env:APK_DOWNLOAD_URL
+          $url = "https://api.telegram.org/bot$env:TELEGRAM_BOT_TOKEN/sendMessage"
+          $body = @{
+            chat_id = $env:TELEGRAM_CHAT_ID
+            text = "New APK release: ${{ github.ref_name }}`nDownload: $apkUrl"
+          }
+          Invoke-RestMethod -Uri $url -Method Post -Body $body
         shell: pwsh
