@@ -52,6 +52,12 @@ jobs:
           ./gradlew :app:preBuild
           cd ..
 
+      - name: Patch autolinking.cpp to remove MMKV JNI includes
+        run: node ./scripts/patch-autolinking-cpp.js
+
+      - name: Debug- Show patched autolinking.cpp
+        run: cat android/app/build/generated/autolinking/src/main/jni/autolinking.cpp
+
       - name: Build release APK
         run: ./gradlew assembleRelease
         working-directory: android

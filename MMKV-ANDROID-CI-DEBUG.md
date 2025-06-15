@@ -30,4 +30,11 @@ This log documents all steps, changes, and observations made while attempting to
 - Fixed YAML syntax errors by wrapping shell commands in double quotes to ensure correct parsing.
 - Next: Commit and push these changes, then re-run CI to check if the dummy CMakeLists.txt is present and if the build proceeds past the previous C++/CMake errors.
 
+## 2025-06-15 (cont'd)
+
+### Actions Taken
+- Created `scripts/patch-autolinking-cpp.js` to remove MMKV JNI includes and references from the generated autolinking.cpp.
+- Added a workflow step to run this patch script after preBuild, and a debug step to show the patched autolinking.cpp.
+- Next: Commit and push these changes, then re-run CI to check if the build proceeds past the previous C++/CMake errors.
+
 ---
