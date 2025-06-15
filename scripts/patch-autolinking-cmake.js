@@ -19,31 +19,24 @@ function printFirstLines(label, content, n = 30) {
 if (fs.existsSync(cmakePath)) {
   let content = fs.readFileSync(cmakePath, 'utf8');
   printFirstLines('Before patch', content);
-  // Remove any add_subdirectory line for any MMKV native code (including codegen/jni and android/)
-  const mmkvAddSubdirRegex = /^.*add_subdirectory\([^\n]*react-native-mmkv[\\/]+android[^\n]*\).*\n?/gmi;
-  // Remove any target_link_libraries line for react_codegen_* (if present)
-  const mmkvTargetLinkRegex = /^.*target_link_libraries\((react_codegen_[A-Za-z0-9_]+)[^\n]*\).*\n?/gmi;
-  // Remove any line in AUTOLINKED_LIBRARIES block referencing react_codegen_*
-  const mmkvLibRefRegex = /^\s*react_codegen_[A-Za-z0-9_]+\s*\n?/gmi;
-  // Remove any line in AUTOLINKED_LIBRARIES block referencing react-native-mmkv
-  const mmkvLibDirectRefRegex = /^\s*react-native-mmkv\s*\n?/gmi;
+
+  // Remove any line referencing react-native-mmkv (add_subdirectory, AUTOLINKED_LIBRARIES, etc)
+  const mmkvAnyLineRegex = /^.*react-native-mmkv.*\n?/gmi;
+  // Remove any line referencing react_codegen_Mmkv or any react_codegen_* (add_subdirectory, target_link_libraries, AUTOLINKED_LIBRARIES, etc)
+  const codegenAnyLineRegex = /^.*react_codegen_[A-Za-z0-9_]+.*\n?/gmi;
 
   let patched = false;
-  let newContent = content.replace(mmkvAddSubdirRegex, '');
+  let newContent = content.replace(mmkvAnyLineRegex, '');
   if (newContent !== content) patched = true;
-  let nextContent = newContent.replace(mmkvTargetLinkRegex, '');
-  if (nextContent !== newContent) patched = true;
-  let next2Content = nextContent.replace(mmkvLibRefRegex, '');
-  if (next2Content !== nextContent) patched = true;
-  let finalContent = next2Content.replace(mmkvLibDirectRefRegex, '');
-  if (finalContent !== next2Content) patched = true;
+  let finalContent = newContent.replace(codegenAnyLineRegex, '');
+  if (finalContent !== newContent) patched = true;
 
   if (patched) {
     fs.writeFileSync(cmakePath, finalContent, 'utf8');
-    console.log('\nPatched Android-autolinking.cmake to REMOVE MMKV add_subdirectory, react-native-mmkv, and react_codegen_* references.');
+    console.log('\nPatched Android-autolinking.cmake to REMOVE ALL MMKV and react_codegen_* references.');
     printFirstLines('After patch', finalContent);
   } else {
-    console.log('\nNo MMKV add_subdirectory, react-native-mmkv, or react_codegen_* lines found or already removed.');
+    console.log('\nNo MMKV or react_codegen_* lines found or already removed.');
     printFirstLines('After patch (no changes)', finalContent);
   }
 } else {
