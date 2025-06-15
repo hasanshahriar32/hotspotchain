@@ -3,6 +3,8 @@ name: Build Android APK
 on:
   push:
     branches: [main]
+    tags:
+      - '*'
 
 jobs:
   build:
@@ -69,7 +71,6 @@ jobs:
           Rename-Item -Path android\app\build\outputs\apk\release\app-release.apk -NewName app-release-${{ steps.apk_version_bash.outputs.suffix }}.apk
         shell: pwsh
 
-
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
@@ -77,3 +78,19 @@ jobs:
           path: |
             android/app/build/outputs/apk/release/app-release-${{ steps.apk_version_bash.outputs.suffix }}.apk
           retention-days: 3
+
+      - name: Send APK to Telegram group (on tag release)
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: -1002769415296
+        run: |
+          $apkPath = "android/app/build/outputs/apk/release/app-release-${{ steps.apk_version_bash.outputs.suffix }}.apk"
+          $url = "https://api.telegram.org/bot$env:TELEGRAM_BOT_TOKEN/sendDocument"
+          $form = @{
+            chat_id = $env:TELEGRAM_CHAT_ID
+            caption = "New APK release: ${{ github.ref_name }}"
+            document = Get-Item $apkPath
+          }
+          Invoke-RestMethod -Uri $url -Method Post -Form $form
+        shell: pwsh
