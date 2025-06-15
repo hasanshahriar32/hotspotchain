@@ -19,8 +19,8 @@ function printFirstLines(label, content, n = 30) {
 if (fs.existsSync(cmakePath)) {
   let content = fs.readFileSync(cmakePath, 'utf8');
   printFirstLines('Before patch', content);
-  // Remove any add_subdirectory line for MMKV codegen JNI (Windows or Unix path)
-  const mmkvAddSubdirRegex = /^.*add_subdirectory\([^\n]*react-native-mmkv[\\/]+android[\\/]+build[\\/]+generated[\\/]+source[\\/]+codegen[\\/]+jni[^\n]*\).*\n?/gmi;
+  // Remove any add_subdirectory line for any MMKV native code (including codegen/jni and android/)
+  const mmkvAddSubdirRegex = /^.*add_subdirectory\([^\n]*react-native-mmkv[\\/]+android[^\n]*\).*\n?/gmi;
   // Remove any target_link_libraries line for react_codegen_* (if present)
   const mmkvTargetLinkRegex = /^.*target_link_libraries\((react_codegen_[A-Za-z0-9_]+)[^\n]*\).*\n?/gmi;
   // Remove any line in AUTOLINKED_LIBRARIES block referencing react_codegen_*
