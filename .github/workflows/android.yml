@@ -89,7 +89,7 @@ jobs:
           $url = "https://api.telegram.org/bot$env:TELEGRAM_BOT_TOKEN/sendMessage"
           $body = @{
             chat_id = $env:TELEGRAM_CHAT_ID
-            text = "New APK release: ${{ github.ref_name }}\nDownload: $apkUrl"
+            text = "New APK release: ${{ github.ref_name }}`nDownload: $apkUrl"
           }
           Invoke-RestMethod -Uri $url -Method Post -Body $body
         shell: pwsh
