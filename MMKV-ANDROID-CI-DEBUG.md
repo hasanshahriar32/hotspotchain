@@ -37,4 +37,10 @@ This log documents all steps, changes, and observations made while attempting to
 - Added a workflow step to run this patch script after preBuild, and a debug step to show the patched autolinking.cpp.
 - Next: Commit and push these changes, then re-run CI to check if the build proceeds past the previous C++/CMake errors.
 
+## 2025-06-15 (cont'd)
+
+### Actions Taken
+- Updated the dummy CMakeLists.txt to add `return()` as the first line, ensuring CMake does not attempt to build any MMKV JNI sources.
+- Next: Commit and push these changes, then re-run CI to check if the build proceeds past the previous C++/CMake errors.
+
 ---

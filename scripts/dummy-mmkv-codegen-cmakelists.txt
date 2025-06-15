@@ -1,3 +1,4 @@
+return()
 # Dummy CMakeLists.txt for MMKV codegen workaround
 cmake_minimum_required(VERSION 3.13)
 # This file is intentionally left blank to satisfy add_subdirectory in autolinking.
