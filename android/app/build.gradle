@@ -130,15 +130,17 @@ gradle.taskGraph.whenReady { taskGraph ->
             def cmakeFile = file("build/generated/autolinking/src/main/jni/Android-autolinking.cmake")
             println "[patchMmkvCmake] Checking for CMake file at: ${cmakeFile.absolutePath}"
             if (cmakeFile.exists()) {
-                println "[patchMmkvCmake] Patching MMKV CMake line in ${cmakeFile.absolutePath}"
+                println "[patchMmkvCmake] Patching MMKV CMake lines in ${cmakeFile.absolutePath}"
                 def content = cmakeFile.getText('UTF-8')
-                // Robust regex: match any add_subdirectory line for MMKV codegen JNI
-                def patchedContent = content.replaceAll(/^(.*add_subdirectory\([^\n]*react-native-mmkv\/android\/build\/generated\/source\/codegen\/jni[^\n]*\).*)$/, '#$1')
-                if (content != patchedContent) {
-                    cmakeFile.write(patchedContent, 'UTF-8')
-                    println "[patchMmkvCmake] Successfully patched MMKV CMake line."
+                // Remove any add_subdirectory line for MMKV codegen JNI
+                def patchedContent = content.replaceAll(/(?m)^.*add_subdirectory\([^\n]*react-native-mmkv[\\/]+android[\\/]+build[\\/]+generated[\\/]+source[\\/]+codegen[\\/]+jni[^\n]*\).*\n?/, "")
+                // Remove any line in AUTOLINKED_LIBRARIES referencing react_codegen_*
+                def finalContent = patchedContent.replaceAll(/(?m)^\s*react_codegen_[A-Za-z0-9_]+\s*\n?/, "")
+                if (content != finalContent) {
+                    cmakeFile.write(finalContent, 'UTF-8')
+                    println "[patchMmkvCmake] Successfully patched MMKV CMake lines."
                 } else {
-                    println "[patchMmkvCmake] MMKV CMake line already patched or not found."
+                    println "[patchMmkvCmake] MMKV CMake lines already patched or not found."
                 }
                 // Print first 20 lines for debug
                 println "[patchMmkvCmake] First 20 lines of patched CMake file:"
