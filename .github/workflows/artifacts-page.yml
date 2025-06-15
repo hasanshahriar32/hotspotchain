@@ -1,0 +1,56 @@
+name: Publish APK Artifacts Page
+on:
+    push:
+        tags:
+            - '*'
+        branches:
+            - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-release-apk-${{ github.ref_name }}
+          path: ./artifacts
+
+      - name: Generate artifacts HTML page
+        run: |
+          mkdir -p ./public
+          echo "<html><head><title>APK Artifacts</title></head><body>" > ./public/index.html
+          echo "<h1>APK Artifacts</h1>" >> ./public/index.html
+          echo "<ul>" >> ./public/index.html
+          for apk in ./artifacts/*.apk; do
+            fname=$(basename "$apk")
+            echo "<li><a href=\"$fname\">$fname</a> (tag: ${{ github.ref_name }})</li>" >> ./public/index.html
+            cp "$apk" ./public/
+          done
+          echo "</ul></body></html>" >> ./public/index.html
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    # Skipping environment configuration as requested
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
