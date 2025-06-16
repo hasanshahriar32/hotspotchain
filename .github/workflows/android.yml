@@ -115,13 +115,26 @@ jobs:
           curl -s -X POST $url -d chat_id=${TELEGRAM_CHAT_ID} -d text="New APK release: ${{ github.ref_name }}`nDownload: $apkUrl"
         shell: bash
 
+      - name: Get artifact download URL (on normal release)
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        id: artifact_url
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          artifact_id=$(gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts --jq '.artifacts[] | select(.name=="app-release-apk-${{ steps.apk_version_bash.outputs.suffix }}") | .id')
+          if [ -n "$artifact_id" ]; then
+            url="https://github.com/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}"
+            echo "artifact_url=$url" >> $GITHUB_OUTPUT
+          fi
+
       - name: Send APK to Telegram user (on normal release)
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: 1191587070
         run: |
+          artifactUrl="${{ steps.artifact_url.outputs.artifact_url }}"
           apkUrl="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           url="https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
-          curl -s -X POST $url -d chat_id=${TELEGRAM_CHAT_ID} -d text="New APK release: ${{ github.ref_name }}`nDownload: $apkUrl"
+          curl -s -X POST $url -d chat_id=${TELEGRAM_CHAT_ID} -d text="New APK release: ${{ github.ref_name }}%0ADownload (run): $apkUrl%0ADirect artifact: $artifactUrl"
         shell: bash
