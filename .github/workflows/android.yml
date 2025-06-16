@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -35,41 +35,41 @@ jobs:
           cd android
           ./gradlew clean
           cd ..
-        shell: pwsh
+        shell: bash
 
       - name: Generate Codegen Artifacts
         run: |
           cd android
           ./gradlew generateCodegenArtifactsFromSchema --rerun-tasks
           cd ..
-        shell: pwsh
+        shell: bash
 
       - name: Gradle preBuild (generate autolinking files)
         run: |
           cd android
           ./gradlew :app:preBuild
           cd ..
-        shell: pwsh
+        shell: bash
 
       - name: Build release APK
         run: ./gradlew assembleRelease
         working-directory: android
-        shell: pwsh
+        shell: bash
 
       - name: Set APK version suffix
         id: apk_version_bash
         run: |
-          if ($env:GITHUB_REF_NAME -and $env:GITHUB_REF -like 'refs/tags/*') {
-            echo "suffix=$env:GITHUB_REF_NAME" >> $env:GITHUB_OUTPUT
-          } else {
-            echo "suffix=$env:GITHUB_RUN_NUMBER" >> $env:GITHUB_OUTPUT
-          }
-        shell: pwsh
+          if [[ "${GITHUB_REF_NAME}" != "" && "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "suffix=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+          else
+            echo "suffix=${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
 
       - name: Rename APK with version
         run: |
-          Rename-Item -Path android\app\build\outputs\apk\release\app-release.apk -NewName app-release-${{ steps.apk_version_bash.outputs.suffix }}.apk
-        shell: pwsh
+          mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/app-release-${{ steps.apk_version_bash.outputs.suffix }}.apk
+        shell: bash
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -85,14 +85,10 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: -1002769415296
         run: |
-          $apkUrl = "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          $url = "https://api.telegram.org/bot$env:TELEGRAM_BOT_TOKEN/sendMessage"
-          $body = @{
-            chat_id = $env:TELEGRAM_CHAT_ID
-            text = "New APK release: ${{ github.ref_name }}`nDownload: $apkUrl"
-          }
-          Invoke-RestMethod -Uri $url -Method Post -Body $body
-        shell: pwsh
+          apkUrl="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          url="https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
+          curl -s -X POST $url -d chat_id=${TELEGRAM_CHAT_ID} -d text="New APK release: ${{ github.ref_name }}\nDownload: $apkUrl"
+        shell: bash
 
       - name: Upload APK to Vercel Blob Storage
         if: startsWith(github.ref, 'refs/tags/')
@@ -100,10 +96,10 @@ jobs:
           VERCEL_BLOB_TOKEN: ${{ secrets.VERCEL_BLOB_TOKEN }}
         run: |
           npm install @vercel/blob
-          $apkPath = "android/app/build/outputs/apk/release/app-release-${{ steps.apk_version_bash.outputs.suffix }}.apk"
-          $apkUrl = node scripts/upload-apk-to-vercel-blob.js $apkPath
-          echo "APK_DOWNLOAD_URL=$apkUrl" | Out-File -FilePath $env:GITHUB_ENV -Append
-        shell: pwsh
+          apkPath="android/app/build/outputs/apk/release/app-release-${{ steps.apk_version_bash.outputs.suffix }}.apk"
+          apkUrl=$(node scripts/upload-apk-to-vercel-blob.js $apkPath)
+          echo "APK_DOWNLOAD_URL=$apkUrl" >> $GITHUB_ENV
+        shell: bash
 
       - name: Send APK link to Telegram group (on tag release)
         if: startsWith(github.ref, 'refs/tags/')
@@ -111,11 +107,18 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: -1002769415296
         run: |
-          $apkUrl = $env:APK_DOWNLOAD_URL
-          $url = "https://api.telegram.org/bot$env:TELEGRAM_BOT_TOKEN/sendMessage"
-          $body = @{
-            chat_id = $env:TELEGRAM_CHAT_ID
-            text = "New APK release: ${{ github.ref_name }}`nDownload: $apkUrl"
-          }
-          Invoke-RestMethod -Uri $url -Method Post -Body $body
-        shell: pwsh
+          apkUrl="${APK_DOWNLOAD_URL}"
+          url="https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
+          curl -s -X POST $url -d chat_id=${TELEGRAM_CHAT_ID} -d text="New APK release: ${{ github.ref_name }}\nDownload: $apkUrl"
+        shell: bash
+
+      - name: Send APK to Telegram user (on normal release)
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: 1191587070
+        run: |
+          apkUrl="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          url="https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
+          curl -s -X POST $url -d chat_id=${TELEGRAM_CHAT_ID} -d text="New APK release: ${{ github.ref_name }}\nDownload: $apkUrl"
+        shell: bash
