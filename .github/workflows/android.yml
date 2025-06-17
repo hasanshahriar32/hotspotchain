@@ -136,9 +136,19 @@ jobs:
         run: |
           node scripts/save-release-to-mongodb.js "$APK_DOWNLOAD_URL" "major" "${{ github.ref_name }}"
 
+      - name: Get artifact ID (on minor release)
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        id: artifact_info_minor
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          artifact_id=$(gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts --jq '.artifacts[] | select(.name=="app-release-apk-${{ steps.apk_version_bash.outputs.suffix }}") | .id')
+          echo "artifact_id=$artifact_id" >> $GITHUB_OUTPUT
+
       - name: Save minor release info to MongoDB
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         env:
           MONGODB_URL: ${{ secrets.MONGODB_URL }}
         run: |
-          node scripts/save-release-to-mongodb.js "android/app/build/outputs/apk/release/app-release-${{ steps.apk_version_bash.outputs.suffix }}.apk" "minor"
+          artifactUrl="https://github.com/${{ github.repository }}/actions/artifacts/${{ steps.artifact_info_minor.outputs.artifact_id }}"
+          node scripts/save-release-to-mongodb.js "$artifactUrl" "minor"
