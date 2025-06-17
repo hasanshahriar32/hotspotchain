@@ -104,46 +104,24 @@ jobs:
           echo "APK_DOWNLOAD_URL=$apkUrl" >> $GITHUB_ENV
         shell: bash
 
+      - name: Get artifact ID (on tag release)
+        if: startsWith(github.ref, 'refs/tags/')
+        id: artifact_info_tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          artifact_id=$(gh api repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts --jq '.artifacts[] | select(.name=="app-release-apk-${{ steps.apk_version_bash.outputs.suffix }}") | .id')
+          echo "artifact_id=$artifact_id" >> $GITHUB_OUTPUT
+
       - name: Send APK link to Telegram group (on tag release)
         if: startsWith(github.ref, 'refs/tags/')
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: -1002769415296
         run: |
+          artifact_id="${{ steps.artifact_info_tag.outputs.artifact_id }}"
           apkUrl="${APK_DOWNLOAD_URL}"
+          artifactUrl="https://github.com/${{ github.repository }}/actions/artifacts/$artifact_id"
           url="https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
-          curl -s -X POST $url -d chat_id=${TELEGRAM_CHAT_ID} -d text="New APK release: ${{ github.ref_name }}`nDownload: $apkUrl"
-        shell: bash
-
-      - name: Send APK to Telegram user (on normal release)
-        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: 1191587070
-        run: |
-          apkUrl="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          url="https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
-          curl -s -X POST $url -d chat_id=${TELEGRAM_CHAT_ID} -d text="New APK release: ${{ github.ref_name }}%0ADownload (run): $apkUrl"
-        shell: bash
-
-      - name: Upload APK to UploadThing (on normal release)
-        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-        env:
-          UPLOADTHING_TOKEN: ${{ secrets.UPLOADTHING_TOKEN }}
-        run: |
-          npm install axios form-data
-          apkPath="android/app/build/outputs/apk/release/app-release-${{ steps.apk_version_bash.outputs.suffix }}.apk"
-          uploadthingUrl=$(node scripts/upload-apk-to-uploadthing.js $apkPath)
-          echo "UPLOADTHING_URL=$uploadthingUrl" >> $GITHUB_ENV
-
-      - name: Send APK link from UploadThing to Telegram user (on normal release)
-        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: 1191587070
-        run: |
-          uploadthingUrl="${UPLOADTHING_URL}"
-          apkUrl="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          url="https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
-          curl -s -X POST $url -d chat_id=${TELEGRAM_CHAT_ID} -d text="New APK release: ${{ github.ref_name }}%0ADownload (run): $apkUrl%0AUploadThing: $uploadthingUrl"
+          curl -s -X POST $url -d chat_id=${TELEGRAM_CHAT_ID} -d text="New APK release: ${{ github.ref_name }}%0ADownload: $apkUrl%0AArtifact: $artifactUrl"
         shell: bash
