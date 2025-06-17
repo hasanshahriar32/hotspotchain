@@ -125,3 +125,20 @@ jobs:
           url="https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
           curl -s -X POST $url -d chat_id=${TELEGRAM_CHAT_ID} -d text="New APK release: ${{ github.ref_name }}%0ADownload: $apkUrl%0AArtifact: $artifactUrl"
         shell: bash
+
+      - name: Install MongoDB Node.js driver
+        run: npm install mongodb
+
+      - name: Save major release info to MongoDB
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          MONGODB_URL: ${{ secrets.MONGODB_URL }}
+        run: |
+          node scripts/save-release-to-mongodb.js "$APK_DOWNLOAD_URL" "major" "${{ github.ref_name }}"
+
+      - name: Save minor release info to MongoDB
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        env:
+          MONGODB_URL: ${{ secrets.MONGODB_URL }}
+        run: |
+          node scripts/save-release-to-mongodb.js "android/app/build/outputs/apk/release/app-release-${{ steps.apk_version_bash.outputs.suffix }}.apk" "minor"
