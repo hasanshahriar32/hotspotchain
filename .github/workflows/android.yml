@@ -90,7 +90,7 @@ jobs:
         run: |
           apkUrl="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           url="https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
-          curl -s -X POST $url -d chat_id=${TELEGRAM_CHAT_ID} -d text="New APK release: ${{ github.ref_name }}\nDownload: $apkUrl"
+          curl -s -X POST $url -d chat_id=${TELEGRAM_CHAT_ID} -d text="New APK release: ${{ github.ref_name }}%0ADownload: $apkUrl"
         shell: bash
 
       - name: Upload APK to Vercel Blob Storage
@@ -123,7 +123,7 @@ jobs:
           apkUrl="${APK_DOWNLOAD_URL}"
           artifactUrl="https://github.com/${{ github.repository }}/actions/artifacts/$artifact_id"
           url="https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
-          curl -s -X POST $url -d chat_id=${TELEGRAM_CHAT_ID} -d text="New APK release: ${{ github.ref_name }}%0ADownload: $apkUrl%0AArtifact: $artifactUrl"
+          curl -s -X POST $url -d chat_id=${TELEGRAM_CHAT_ID} -d text="New APK release: ${{ github.ref_name }}%0ADownload: $apkUrl"
         shell: bash
 
       - name: Install MongoDB Node.js driver
