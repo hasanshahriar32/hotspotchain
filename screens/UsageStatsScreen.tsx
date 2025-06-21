@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Button } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { Button } from 'react-native-paper';
 import UsageStats from '../components/UsageStats';
 import VpnProxyModule from '../native/VpnProxyModule';
 
@@ -23,7 +24,9 @@ const UsageStatsScreen = () => {
   return (
     <View style={styles.container}>
       <UsageStats sent={usage.sent} received={usage.received} tokensTransferred={tokens} />
-      <Button title="Simulate Usage & Token Flow" onPress={handleSimulateUsage} />
+      <Button mode="contained" icon="refresh" onPress={handleSimulateUsage} style={styles.button}>
+        Simulate Usage & Token Flow
+      </Button>
     </View>
   );
 };
@@ -34,6 +37,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
+    backgroundColor: '#f6f6f6',
+  },
+  button: {
+    marginTop: 16,
+    width: '100%',
   },
 });
 
