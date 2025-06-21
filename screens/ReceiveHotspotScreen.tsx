@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, Button } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { Card, Title, Button, Text } from 'react-native-paper';
 import VpnProxyModule from '../native/VpnProxyModule';
+import TopRightMenu from '../components/TopRightMenu';
 
 const ReceiveHotspotScreen = () => {
   const [vpnRunning, setVpnRunning] = useState(false);
@@ -32,13 +34,24 @@ const ReceiveHotspotScreen = () => {
   };
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Hotspot Receiving (Demo)</Text>
-      <Text>VPN/Proxy: {vpnRunning ? 'Running' : 'Stopped'}</Text>
-      <Button title="Start VPN/Proxy" onPress={handleStartVpn} />
-      <Button title="Stop VPN/Proxy" onPress={handleStopVpn} />
-      <Button title="Get Usage Stats" onPress={handleGetUsage} />
-      <Text>Sent: {usage.sent} bytes</Text>
-      <Text>Received: {usage.received} bytes</Text>
+      <TopRightMenu />
+      <Card style={styles.card}>
+        <Card.Content>
+          <Title style={styles.title}>Hotspot Receiving (Demo)</Title>
+          <Text style={styles.vpnStatus}>VPN/Proxy: {vpnRunning ? 'Running' : 'Stopped'}</Text>
+          <Button mode="contained" icon="vpn" style={styles.button} onPress={handleStartVpn}>
+            Start VPN/Proxy
+          </Button>
+          <Button mode="outlined" icon="vpn-off" style={styles.button} onPress={handleStopVpn}>
+            Stop VPN/Proxy
+          </Button>
+          <Button mode="contained" icon="chart-bar" style={styles.button} onPress={handleGetUsage}>
+            Get Usage Stats
+          </Button>
+          <Text style={styles.usageText}>Sent: {usage.sent} bytes</Text>
+          <Text style={styles.usageText}>Received: {usage.received} bytes</Text>
+        </Card.Content>
+      </Card>
     </View>
   );
 };
@@ -46,13 +59,31 @@ const ReceiveHotspotScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#f6f6f6',
     padding: 16,
+    justifyContent: 'center',
+  },
+  card: {
+    padding: 16,
+    borderRadius: 16,
+    elevation: 4,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     marginBottom: 16,
+    textAlign: 'center',
+  },
+  button: {
+    marginVertical: 8,
+  },
+  vpnStatus: {
+    marginTop: 8,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  usageText: {
+    marginTop: 4,
+    textAlign: 'center',
   },
 });
 

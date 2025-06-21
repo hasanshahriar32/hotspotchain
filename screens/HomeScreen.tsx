@@ -1,27 +1,51 @@
-import React from 'react';
-import { View, StyleSheet, Text, Button } from 'react-native';
+import * as React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { Card, Title, Button } from 'react-native-paper';
 import auth from '@react-native-firebase/auth';
+import TopRightMenu from '../components/TopRightMenu';
 
 const HomeScreen = ({ navigation }: any) => (
   <View style={styles.container}>
-    <Text style={styles.title}>Welcome to HotspotApp!</Text>
-    <Button title="Share Hotspot" onPress={() => navigation.navigate('ShareHotspot')} />
-    <Button title="Receive Hotspot" onPress={() => navigation.navigate('ReceiveHotspot')} />
-    <Button title="Usage Stats" onPress={() => navigation.navigate('UsageStats')} />
-    <Button title="Sign Out" onPress={() => auth().signOut()} />
+    <TopRightMenu />
+    <Card style={styles.card}>
+      <Card.Content>
+        <Title style={styles.title}>Welcome to HotspotApp!</Title>
+        <Button mode="contained" icon="wifi" style={styles.button} onPress={() => navigation.navigate('ShareHotspot')}>
+          Share Hotspot
+        </Button>
+        <Button mode="contained" icon="wifi-strength-2" style={styles.button} onPress={() => navigation.navigate('ReceiveHotspot')}>
+          Receive Hotspot
+        </Button>
+        <Button mode="contained" icon="chart-bar" style={styles.button} onPress={() => navigation.navigate('UsageStats')}>
+          Usage Stats
+        </Button>
+        <Button mode="outlined" icon="logout" style={styles.button} onPress={() => auth().signOut()}>
+          Sign Out
+        </Button>
+      </Card.Content>
+    </Card>
   </View>
 );
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#f6f6f6',
     padding: 16,
+    justifyContent: 'center',
+  },
+  card: {
+    padding: 16,
+    borderRadius: 16,
+    elevation: 4,
   },
   title: {
     fontSize: 24,
     marginBottom: 16,
+    textAlign: 'center',
+  },
+  button: {
+    marginVertical: 8,
   },
 });
 

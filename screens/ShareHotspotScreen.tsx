@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, Button } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { Card, Title, Button, Text } from 'react-native-paper';
 import HotspotModule from '../native/HotspotModule';
 import VpnProxyModule from '../native/VpnProxyModule';
+import TopRightMenu from '../components/TopRightMenu';
 
 const ShareHotspotScreen = () => {
   const [hotspotStatus, setHotspotStatus] = useState<string>('UNKNOWN');
@@ -41,13 +43,26 @@ const ShareHotspotScreen = () => {
   };
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Hotspot Sharing (Demo)</Text>
-      <Text>Status: {hotspotStatus}</Text>
-      <Button title="Enable Hotspot" onPress={handleEnableHotspot} />
-      <Button title="Disable Hotspot" onPress={handleDisableHotspot} />
-      <Text>VPN/Proxy: {vpnRunning ? 'Running' : 'Stopped'}</Text>
-      <Button title="Start VPN/Proxy" onPress={handleStartVpn} />
-      <Button title="Stop VPN/Proxy" onPress={handleStopVpn} />
+      <TopRightMenu />
+      <Card style={styles.card}>
+        <Card.Content>
+          <Title style={styles.title}>Hotspot Sharing (Demo)</Title>
+          <Text>Status: {hotspotStatus}</Text>
+          <Button mode="contained" icon="wifi" style={styles.button} onPress={handleEnableHotspot}>
+            Enable Hotspot
+          </Button>
+          <Button mode="outlined" icon="wifi-off" style={styles.button} onPress={handleDisableHotspot}>
+            Disable Hotspot
+          </Button>
+          <Text style={styles.vpnStatus}>VPN/Proxy: {vpnRunning ? 'Running' : 'Stopped'}</Text>
+          <Button mode="contained" icon="vpn" style={styles.button} onPress={handleStartVpn}>
+            Start VPN/Proxy
+          </Button>
+          <Button mode="outlined" icon="vpn-off" style={styles.button} onPress={handleStopVpn}>
+            Stop VPN/Proxy
+          </Button>
+        </Card.Content>
+      </Card>
     </View>
   );
 };
@@ -55,13 +70,27 @@ const ShareHotspotScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#f6f6f6',
     padding: 16,
+    justifyContent: 'center',
+  },
+  card: {
+    padding: 16,
+    borderRadius: 16,
+    elevation: 4,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     marginBottom: 16,
+    textAlign: 'center',
+  },
+  button: {
+    marginVertical: 8,
+  },
+  vpnStatus: {
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
   },
 });
 

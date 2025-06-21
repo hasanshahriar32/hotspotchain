@@ -6,8 +6,18 @@ import ShareHotspotScreen from '../screens/ShareHotspotScreen';
 import ReceiveHotspotScreen from '../screens/ReceiveHotspotScreen';
 import UsageStatsScreen from '../screens/UsageStatsScreen';
 import UserInfoScreen from '../screens/UserInfoScreen';
+import { Appbar } from 'react-native-paper';
+import TopRightMenu from '../components/TopRightMenu';
 
 const Stack = createNativeStackNavigator();
+
+const customHeaders = {
+  Home: () => <Appbar.Header><Appbar.Content title="Home" /><TopRightMenu /></Appbar.Header>,
+  ShareHotspot: () => <Appbar.Header><Appbar.Content title="Share Hotspot" /><TopRightMenu /></Appbar.Header>,
+  ReceiveHotspot: () => <Appbar.Header><Appbar.Content title="Receive Hotspot" /><TopRightMenu /></Appbar.Header>,
+  UsageStats: () => <Appbar.Header><Appbar.Content title="Usage Stats" /><TopRightMenu /></Appbar.Header>,
+  UserInfo: () => <Appbar.Header><Appbar.Content title="User Info" /><TopRightMenu /></Appbar.Header>,
+};
 
 const AppNavigator = () => {
   const [user, setUser] = React.useState<any>(null);
@@ -21,11 +31,11 @@ const AppNavigator = () => {
     <Stack.Navigator>
       {user ? (
         <>
-          <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="ShareHotspot" component={ShareHotspotScreen} />
-          <Stack.Screen name="ReceiveHotspot" component={ReceiveHotspotScreen} />
-          <Stack.Screen name="UsageStats" component={UsageStatsScreen} />
-          <Stack.Screen name="UserInfo" component={UserInfoScreen} options={{ title: "User Info" }} />
+          <Stack.Screen name="Home" component={HomeScreen} options={{ header: customHeaders.Home }} />
+          <Stack.Screen name="ShareHotspot" component={ShareHotspotScreen} options={{ header: customHeaders.ShareHotspot }} />
+          <Stack.Screen name="ReceiveHotspot" component={ReceiveHotspotScreen} options={{ header: customHeaders.ReceiveHotspot }} />
+          <Stack.Screen name="UsageStats" component={UsageStatsScreen} options={{ header: customHeaders.UsageStats }} />
+          <Stack.Screen name="UserInfo" component={UserInfoScreen} options={{ header: customHeaders.UserInfo }} />
         </>
       ) : (
         <Stack.Screen name="Login" getComponent={() => require('../LoginScreen').default} options={{ headerShown: false }} />
