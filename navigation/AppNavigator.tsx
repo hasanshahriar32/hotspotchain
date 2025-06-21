@@ -28,7 +28,7 @@ const AppNavigator = () => {
           <Stack.Screen name="UserInfo" component={UserInfoScreen} options={{ title: "User Info" }} />
         </>
       ) : (
-        <Stack.Screen name="Login" getComponent={() => require('./LoginScreen').default} options={{ headerShown: false }} />
+        <Stack.Screen name="Login" getComponent={() => require('../LoginScreen').default} options={{ headerShown: false }} />
       )}
     </Stack.Navigator>
   );
