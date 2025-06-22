@@ -119,6 +119,7 @@ dependencies {
 }
 
 apply plugin: 'com.google.gms.google-services'
+apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
 // --- MMKV CMake patch: inject directly into all CMake-related tasks ---
 // gradle.taskGraph.whenReady { taskGraph ->
